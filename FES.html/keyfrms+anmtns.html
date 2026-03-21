@@ -1,0 +1,28 @@
+<head>
+    <body>
+    <div class="banner">
+    <h2>Welcome Back</h2>
+    <p>This Banner animates when the page loads.</p>
+</div>
+</body>
+</head>
+
+<style>
+@keyframes fadeSlide {
+    from {
+        opacity:0;
+        transform: translateY(30px);
+    }
+    
+ to{
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.banner {
+    padding: 24px;
+    background-color; red;
+    border-radius: 10px;
+    animation; fadeSlide 5s ease-in-out 30ms;
+}
+</style>

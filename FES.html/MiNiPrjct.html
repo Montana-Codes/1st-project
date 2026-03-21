@@ -1,0 +1,86 @@
+<nav class="navbar">
+    <h1 class="navbar__logo">Prophets</h1>
+    <div class="navbar__links">
+        <a href="#">Home</a>
+        <a href="#">Courses</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </div>
+</nav>
+
+<section class="gallery">
+    <div class="card">
+        <img src="https://viaplaceholder.com/250x150" alt="Card 1">
+        <h2> Project One
+        <p> Clean and Minimal layout.</p>
+        </div>
+
+        <div class="card">
+            <img src="https://viaplaceholder.com/250x150" alt="Card 2">
+            <h2>Project Two</h2>
+            <p>Flexible and responsive design.</p>
+        </div>
+
+        <div class="card">
+            <img src="https://via.plcaeholder.com/250x150" alt="Card 3">
+            <h2>Project Three</h2>
+            <p>Built using Flexbox principles.</p>
+        </div>
+        </section>
+
+        <style>
+            .navbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px 40px;
+                background-color: gold;
+                color: black;
+            }
+
+            .navbar__logo {
+                font-size: 24px;
+                font-weight: bold;
+            }
+
+            .navbar__links {
+                display: flex;
+                gap: 25px;
+            }
+
+            .navbar__links a {
+                color: white;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .navbar__links a:hover {
+                text-decoration: underline;
+            }
+        </style>
+
+        <style>
+            .gallery {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                justify-content: center;
+                padding: 40px;
+                background-color: rgb(107,132,35);
+            }
+            
+            .card {
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                width: 250px;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .card img {
+                width: 100%;
+                border-radius: 8px;
+                margin-bottom: 15px;
+            }
+</style>

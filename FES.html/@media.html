@@ -1,0 +1,42 @@
+<div class="container">
+    <div class="card">
+        <h3>Card One</h3>
+        <p>This card adjusts based screen size.</p>
+    </div>
+<div class="card">
+    <h3>Card Two</h3>
+    <p>Try resizing the browser window.</p>
+</div>
+
+<div class="card">
+    <h3>Card Three</h3>
+    <p>Responsive design in action</p>
+    </div>
+</div>
+
+<style>
+    .container {
+    display: flex;
+    gap: 20px;
+    }
+
+    .card {
+        width: 33.33%
+        padding: 20px;
+        background-color: green
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    /* Tablet */
+    @media (max-width: 480px) {
+        ,container {
+            flex-direction: column;
+        }
+
+        .card {
+            width: 100%;
+        }
+    }
+</style>
