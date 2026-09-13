@@ -1,5 +1,33 @@
 (function () {
-  let pdfJsModulePromise;
+  const CUV_BOOK_LABELS = {
+    Matthew: ["马太福音", "馬太福音"],
+    Mark: ["马可福音", "馬可福音"],
+    Luke: ["路加福音"],
+    John: ["约翰福音", "約翰福音"],
+    Acts: ["使徒行传", "使徒行傳"],
+    Romans: ["罗马书", "羅馬書"],
+    "1 Corinthians": ["哥林多前书", "哥林多前書"],
+    "2 Corinthians": ["哥林多后书", "哥林多後書"],
+    Galatians: ["加拉太书", "加拉太書"],
+    Ephesians: ["以弗所书", "以弗所書"],
+    Philippians: ["腓立比书", "腓立比書"],
+    Colossians: ["歌罗西书", "歌羅西書"],
+    "1 Thessalonians": ["帖撒罗尼迦前书", "帖撒羅尼迦前書"],
+    "2 Thessalonians": ["帖撒罗尼迦后书", "帖撒羅尼迦後書"],
+    "1 Timothy": ["提摩太前书", "提摩太前書"],
+    "2 Timothy": ["提摩太后书", "提摩太後書"],
+    Titus: ["提多书", "提多書"],
+    Philemon: ["腓利门书", "腓利門書"],
+    Hebrews: ["希伯来书", "希伯來書"],
+    James: ["雅各书", "雅各書"],
+    "1 Peter": ["彼得前书", "彼得前書"],
+    "2 Peter": ["彼得后书", "彼得後書"],
+    "1 John": ["约翰一书", "約翰一書"],
+    "2 John": ["约翰二书", "約翰二書"],
+    "3 John": ["约翰三书", "約翰三書"],
+    Jude: ["犹大书", "猶大書"],
+    Revelation: ["启示录", "啟示錄"],
+  };
 
   const NT_BOOKS = [
     ["Matthew", 28],
@@ -58,6 +86,8 @@
   function setMessage(message, isError) {
     elements.message.textContent = message;
     elements.message.classList.toggle("error", Boolean(isError));
+    elements.message.setAttribute("role", isError ? "alert" : "status");
+    elements.message.setAttribute("aria-live", isError ? "assertive" : "polite");
   }
 
   function populateBookSelector() {
@@ -85,15 +115,17 @@
       state.selectedBook === lastBook && state.selectedChapter === lastChapter;
   }
 
-  function findTextAnchor(text, book, chapter) {
+  function findTextAnchor(text, bookTerms, chapter) {
     if (!text) {
       return -1;
     }
 
-    const escapedBook = book.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedTerms = bookTerms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
     const candidates = [
-      new RegExp(`${escapedBook}\\s+${chapter}\\b`, "i"),
-      new RegExp(`${escapedBook}${chapter}\\b`, "i"),
+      ...escapedTerms.flatMap((escapedBook) => [
+        new RegExp(`${escapedBook}\\s+${chapter}\\b`, "i"),
+        new RegExp(`${escapedBook}${chapter}\\b`, "i"),
+      ]),
       new RegExp(`\\bChapter\\s+${chapter}\\b`, "i"),
       new RegExp(`\\bCHAPTER\\s+${chapter}\\b`, "i"),
     ];
@@ -139,7 +171,11 @@
     heading.className = "chapter-marker";
     heading.textContent = `${state.selectedBook} ${state.selectedChapter}`;
 
-    const anchor = findTextAnchor(translation.text, state.selectedBook, state.selectedChapter);
+    const bookTerms = [state.selectedBook];
+    if (translationKey === "cuv") {
+      bookTerms.push(...(CUV_BOOK_LABELS[state.selectedBook] || []));
+    }
+    const anchor = findTextAnchor(translation.text, bookTerms, state.selectedChapter);
     const content = document.createElement("div");
     content.textContent = createDisplayText(translation.text, anchor >= 0 ? anchor : 0);
 
@@ -175,15 +211,12 @@
   }
 
   async function extractPdfText(file) {
-    if (!pdfJsModulePromise) {
-      pdfJsModulePromise = import(
-        "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs"
-      );
+    const pdfjs = window.pdfjsLib;
+    if (!pdfjs) {
+      throw new Error("PDF support library could not be loaded.");
     }
-    const pdfModule = await pdfJsModulePromise;
-    const pdfjs = pdfModule.default || pdfModule;
     pdfjs.GlobalWorkerOptions.workerSrc =
-      "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.min.mjs";
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.min.js";
 
     const bytes = await file.arrayBuffer();
     const documentRef = await pdfjs.getDocument({ data: bytes }).promise;
@@ -222,7 +255,7 @@
     for (const section of book.spine.spineItems) {
       try {
         const sectionDocument = await section.load(book.load.bind(book));
-        text += `\n${sectionDocument?.body?.innerText || ""}`;
+        text += `\n${sectionDocument?.body?.textContent || ""}`;
       } finally {
         section.unload();
       }
@@ -273,8 +306,6 @@
       if (activeToken !== state.importToken[translationKey]) {
         return;
       }
-      state[translationKey].loaded = false;
-      state[translationKey].text = "";
       statusEl.textContent = `Could not load ${file.name}.`;
       renderAllPanes();
       setMessage(error.message || "Could not parse this file.", true);

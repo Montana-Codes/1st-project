@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NIV + CUV New Testament Reader</title>
     <link rel="stylesheet" href="./assets/reader.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
     <script defer src="./assets/reader.js"></script>
   </head>
@@ -106,7 +107,7 @@
         </article>
       </section>
 
-      <p id="readerMessage" class="message" aria-live="polite"></p>
+      <p id="readerMessage" class="message" role="status" aria-live="polite"></p>
     </main>
   </body>
 </html>
