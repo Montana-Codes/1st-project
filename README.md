@@ -13,7 +13,7 @@ Browser-based side-by-side New Testament reader with:
 This project is static HTML/CSS/JS. You can open `Index.html` directly, but using a local server is recommended:
 
 ```bash
-cd /home/runner/work/1st-project/1st-project
+cd 1st-project
 python3 -m http.server 8000
 ```
 

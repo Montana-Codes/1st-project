@@ -1,4 +1,6 @@
 (function () {
+  let pdfJsModulePromise;
+
   const NT_BOOKS = [
     ["Matthew", 28],
     ["Mark", 16],
@@ -87,31 +89,31 @@
       return -1;
     }
 
-    const normalized = text.replace(/\s+/g, " ");
+    const escapedBook = book.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const candidates = [
-      `${book} ${chapter}`,
-      `${book}${chapter}`,
-      `${chapter}.`,
-      `Chapter ${chapter}`,
-      `CHAPTER ${chapter}`,
+      new RegExp(`${escapedBook}\\s+${chapter}\\b`, "i"),
+      new RegExp(`${escapedBook}${chapter}\\b`, "i"),
+      new RegExp(`\\bChapter\\s+${chapter}\\b`, "i"),
+      new RegExp(`\\bCHAPTER\\s+${chapter}\\b`, "i"),
     ];
 
     for (const candidate of candidates) {
-      const index = normalized.indexOf(candidate);
-      if (index >= 0) {
-        return index;
+      const match = text.match(candidate);
+      if (match?.index !== undefined) {
+        return match.index;
       }
     }
 
     return -1;
   }
 
-  function createDisplayText(text) {
+  function createDisplayText(text, startIndex) {
     if (!text) {
       return "";
     }
 
     const chunks = text
+      .slice(Math.max(0, startIndex || 0))
       .replace(/\r/g, "")
       .split(/\n{2,}/)
       .map((chunk) => chunk.trim())
@@ -136,13 +138,12 @@
     heading.className = "chapter-marker";
     heading.textContent = `${state.selectedBook} ${state.selectedChapter}`;
 
+    const anchor = findTextAnchor(translation.text, state.selectedBook, state.selectedChapter);
     const content = document.createElement("div");
-    content.textContent = createDisplayText(translation.text);
+    content.textContent = createDisplayText(translation.text, anchor >= 0 ? anchor : 0);
 
     pane.appendChild(heading);
     pane.appendChild(content);
-
-    const anchor = findTextAnchor(translation.text, state.selectedBook, state.selectedChapter);
     if (anchor < 0) {
       setMessage(
         "Files loaded. Chapter navigation is best-effort because PDF/EPUB formatting differs by publisher.",
@@ -152,7 +153,12 @@
   }
 
   async function extractPdfText(file) {
-    const pdfModule = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs");
+    if (!pdfJsModulePromise) {
+      pdfJsModulePromise = import(
+        "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs"
+      );
+    }
+    const pdfModule = await pdfJsModulePromise;
     const pdfjs = pdfModule.default || pdfModule;
     pdfjs.GlobalWorkerOptions.workerSrc =
       "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.min.mjs";
