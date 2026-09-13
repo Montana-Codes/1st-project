@@ -131,7 +131,7 @@
         translationKey === "niv"
           ? `<div class="empty-state"><p><strong>NIV is empty.</strong></p><p>Import a legally obtained NIV New Testament PDF/EPUB to begin.</p></div>`
           : `<div class="empty-state"><p><strong>CUV is empty.</strong></p><p>Import a legally obtained Chinese Union Version New Testament PDF/EPUB to begin.</p></div>`;
-      return;
+      return null;
     }
 
     const heading = document.createElement("p");
@@ -144,12 +144,33 @@
 
     pane.appendChild(heading);
     pane.appendChild(content);
-    if (anchor < 0) {
+    return anchor >= 0;
+  }
+
+  function renderAllPanes() {
+    const nivAnchorFound = renderPane(elements.nivPane, "niv");
+    const cuvAnchorFound = renderPane(elements.cuvPane, "cuv");
+    const hasLoadedFiles = state.niv.loaded || state.cuv.loaded;
+    const anchorMissing =
+      (state.niv.loaded && nivAnchorFound === false) || (state.cuv.loaded && cuvAnchorFound === false);
+
+    if (!hasLoadedFiles) {
+      setMessage(
+        "Choose NIV and CUV New Testament PDF/EPUB files to start reading side-by-side.",
+        false
+      );
+      return;
+    }
+
+    if (anchorMissing) {
       setMessage(
         "Files loaded. Chapter navigation is best-effort because PDF/EPUB formatting differs by publisher.",
         false
       );
+      return;
     }
+
+    setMessage("Import complete. Your files stay on this device and are not uploaded.", false);
   }
 
   async function extractPdfText(file) {
@@ -224,15 +245,12 @@
       state[translationKey].loaded = true;
       state[translationKey].fileName = file.name;
       statusEl.textContent = `Loaded ${file.name}. Displaying imported text locally in your browser.`;
-      renderPane(elements.nivPane, "niv");
-      renderPane(elements.cuvPane, "cuv");
-      setMessage("Import complete. Your files stay on this device and are not uploaded.", false);
+      renderAllPanes();
     } catch (error) {
       state[translationKey].loaded = false;
       state[translationKey].text = "";
       statusEl.textContent = `Could not load ${file.name}.`;
-      renderPane(elements.nivPane, "niv");
-      renderPane(elements.cuvPane, "cuv");
+      renderAllPanes();
       setMessage(error.message || "Could not parse this file.", true);
     }
   }
@@ -264,8 +282,7 @@
 
     elements.bookSelect.value = state.selectedBook;
     updateChapterSelector();
-    renderPane(elements.nivPane, "niv");
-    renderPane(elements.cuvPane, "cuv");
+    renderAllPanes();
   }
 
   function setupScrollSync() {
@@ -298,15 +315,13 @@
       state.selectedBook = event.target.value;
       state.selectedChapter = 1;
       updateChapterSelector();
-      renderPane(elements.nivPane, "niv");
-      renderPane(elements.cuvPane, "cuv");
+      renderAllPanes();
     });
 
     elements.chapterSelect.addEventListener("change", (event) => {
       state.selectedChapter = Number(event.target.value);
       updateChapterSelector();
-      renderPane(elements.nivPane, "niv");
-      renderPane(elements.cuvPane, "cuv");
+      renderAllPanes();
     });
 
     elements.prevButton.addEventListener("click", () => moveChapter(-1));
@@ -331,12 +346,7 @@
     updateChapterSelector();
     setupEvents();
     setupScrollSync();
-    renderPane(elements.nivPane, "niv");
-    renderPane(elements.cuvPane, "cuv");
-    setMessage(
-      "Choose NIV and CUV New Testament PDF/EPUB files to start reading side-by-side.",
-      false
-    );
+    renderAllPanes();
   }
 
   init();
