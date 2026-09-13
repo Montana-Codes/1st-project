@@ -37,6 +37,7 @@
     syncScroll: true,
     niv: { text: "", loaded: false, fileName: "" },
     cuv: { text: "", loaded: false, fileName: "" },
+    importToken: { niv: 0, cuv: 0 },
   };
 
   const elements = {
@@ -191,7 +192,17 @@
     for (let pageNumber = 1; pageNumber <= documentRef.numPages; pageNumber += 1) {
       const page = await documentRef.getPage(pageNumber);
       const content = await page.getTextContent();
-      const pageText = content.items.map((item) => item.str).join(" ");
+      const pageText = content.items
+        .map((item) => item.str || "")
+        .reduce((combined, current, index, list) => {
+          if (!combined) {
+            return current;
+          }
+
+          const previous = list[index - 1] || "";
+          const needsSpace = /[A-Za-z0-9]$/.test(previous) && /^[A-Za-z0-9]/.test(current);
+          return `${combined}${needsSpace ? " " : ""}${current}`;
+        }, "");
       text += `\n${pageText}`;
     }
 
@@ -223,14 +234,8 @@
   async function extractText(file) {
     const mime = (file.type || "").toLowerCase();
     const extension = file.name.split(".").pop()?.toLowerCase();
-    const isPdf =
-      mime === "application/pdf" ||
-      (!mime && extension === "pdf") ||
-      extension === "pdf";
-    const isEpub =
-      mime === "application/epub+zip" ||
-      (!mime && extension === "epub") ||
-      extension === "epub";
+    const isPdf = mime === "application/pdf" || extension === "pdf";
+    const isEpub = mime === "application/epub+zip" || extension === "epub";
 
     if (isPdf) {
       return extractPdfText(file);
@@ -249,17 +254,25 @@
       return;
     }
 
+    state.importToken[translationKey] += 1;
+    const activeToken = state.importToken[translationKey];
     statusEl.textContent = `Loading ${file.name}...`;
     setMessage("", false);
 
     try {
       const text = await extractText(file);
+      if (activeToken !== state.importToken[translationKey]) {
+        return;
+      }
       state[translationKey].text = text;
       state[translationKey].loaded = true;
       state[translationKey].fileName = file.name;
       statusEl.textContent = `Loaded ${file.name}. Displaying imported text locally in your browser.`;
       renderAllPanes();
     } catch (error) {
+      if (activeToken !== state.importToken[translationKey]) {
+        return;
+      }
       state[translationKey].loaded = false;
       state[translationKey].text = "";
       statusEl.textContent = `Could not load ${file.name}.`;

@@ -168,6 +168,9 @@ button:disabled {
 
 .message.error {
   color: var(--error);
+  border-left: 4px solid var(--error);
+  font-weight: 600;
+  background: #fff6f6;
 }
 
 @media (max-width: 900px) {
