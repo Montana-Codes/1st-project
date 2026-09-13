@@ -1,21 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research</title>
-</head>
-<body>
-    Montana
-</body>
-</html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NIV + CUV New Testament Reader</title>
+    <link rel="stylesheet" href="./assets/reader.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs" type="module"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+    <script defer src="./assets/reader.js"></script>
+  </head>
+  <body>
+    <main class="app">
+      <header class="app-header">
+        <div>
+          <h1>New Testament Side-by-Side Reader</h1>
+          <p>
+            Load your legally obtained <strong>NIV</strong> and
+            <strong>Chinese Union Version (CUV)</strong> PDF/EPUB files locally.
+            This app does not include or redistribute Bible text.
+          </p>
+        </div>
+      </header>
 
-<style>
-h1 {
-    color: gold;
-}
-p {
-    color: black;
-    font-style: italic;
-}
-</style>
+      <section class="toolbar" aria-label="Reader controls">
+        <label>
+          Book
+          <select id="bookSelect" aria-label="Book selector"></select>
+        </label>
+        <label>
+          Chapter
+          <select id="chapterSelect" aria-label="Chapter selector"></select>
+        </label>
+        <button id="prevChapter" type="button">Previous</button>
+        <button id="nextChapter" type="button">Next</button>
+        <label class="checkbox-inline">
+          <input id="syncScroll" type="checkbox" checked />
+          Sync scrolling
+        </label>
+      </section>
+
+      <section class="imports" aria-label="Translation file imports">
+        <div class="import-card">
+          <h2>NIV (Left)</h2>
+          <p class="hint">Choose a New Testament PDF or EPUB file.</p>
+          <input
+            id="nivFile"
+            type="file"
+            accept=".pdf,.epub,application/pdf,application/epub+zip"
+          />
+          <p id="nivStatus" class="status">No NIV file loaded.</p>
+        </div>
+
+        <div class="import-card">
+          <h2>CUV (Right)</h2>
+          <p class="hint">Choose a New Testament PDF or EPUB file.</p>
+          <input
+            id="cuvFile"
+            type="file"
+            accept=".pdf,.epub,application/pdf,application/epub+zip"
+          />
+          <p id="cuvStatus" class="status">No CUV file loaded.</p>
+        </div>
+      </section>
+
+      <section class="reader-grid">
+        <article class="reader-column" aria-label="NIV reader column">
+          <h3>NIV</h3>
+          <div id="nivPane" class="pane" tabindex="0">
+            <div class="empty-state">
+              <p><strong>NIV is empty.</strong></p>
+              <p>
+                Import a legally obtained NIV New Testament PDF/EPUB to begin.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <article class="reader-column" aria-label="CUV reader column">
+          <h3>CUV</h3>
+          <div id="cuvPane" class="pane" tabindex="0">
+            <div class="empty-state">
+              <p><strong>CUV is empty.</strong></p>
+              <p>
+                Import a legally obtained Chinese Union Version New Testament
+                PDF/EPUB to begin.
+              </p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <p id="readerMessage" class="message" aria-live="polite"></p>
+    </main>
+  </body>
+</html>
