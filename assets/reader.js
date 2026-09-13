@@ -209,20 +209,33 @@
 
     let text = "";
     for (const section of book.spine.spineItems) {
-      const sectionDocument = await section.load(book.load.bind(book));
-      text += `\n${sectionDocument?.body?.innerText || ""}`;
-      section.unload();
+      try {
+        const sectionDocument = await section.load(book.load.bind(book));
+        text += `\n${sectionDocument?.body?.innerText || ""}`;
+      } finally {
+        section.unload();
+      }
     }
 
     return text;
   }
 
   async function extractText(file) {
+    const mime = (file.type || "").toLowerCase();
     const extension = file.name.split(".").pop()?.toLowerCase();
-    if (extension === "pdf") {
+    const isPdf =
+      mime === "application/pdf" ||
+      (!mime && extension === "pdf") ||
+      extension === "pdf";
+    const isEpub =
+      mime === "application/epub+zip" ||
+      (!mime && extension === "epub") ||
+      extension === "epub";
+
+    if (isPdf) {
       return extractPdfText(file);
     }
-    if (extension === "epub") {
+    if (isEpub) {
       return extractEpubText(file);
     }
 
